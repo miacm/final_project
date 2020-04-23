@@ -1,0 +1,251 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Restaurants in Charlotte</title>
+</head>
+<body>
+    <nav class="navbar navbar-default">
+
+        <div class="navbar-header" href="#"><h2>Restuarants in Gentrified Neighborhoods Charlotte, NC</h2><br>
+        <h4>Goal of this project</h4>
+        <p>The purpose of this project is to begin to explore different ways of visualizing change occuring in gentrified areas. A lot of the discussion around gentrification focuses on economic and demographic data, but gentrification impacts the lived experiences of people from these areas in ways not captured through normal explanations of and about gentrification.
+        I chose to use the Yelp dataset in order to look at the change in restaurants overtime in gentrifying areas. I decided to use restaurants as a proxy for one component of community, examining how the presence, ratings and reviews of restaurants change over time as gentrification occurs.
+        This project is far from what it could be (look up Yelp dataset visualization for examples of much more complete projects), however, it was an interesting experience and a starting point for more in-depth exploration of this data.</p>
+        <p>The three maps below are of Charlotte, NC, divided into three time periods based off a combined timeline of gentrification in the area and available data on restaurant reviews. The pins on the map each represent the location of a different restaurant.
+        Restaurants are appointed to maps based on the first review date available. This is a proxy for the opening of restauarants. Pop-up boxes provide information about restuarant name, overall rating, and the year of the first review.  
+        Each time period allows you to toggle layers to include the restaurants present in the preceding years. The word clouds at the bottom of the page are made from reviews that correspond with the time periods on the map. The second set of word clouds are made from low reviews (1-2.9 stars) and high reviews (3-5 stars) respectively.</p>
+        <h5>Data Sources</h5>
+        <ul>
+          <li><a href="https://www.yelp.com/dataset" target="_blank">Yelp Dataset</a></li>
+          <li><a href="https://www.governing.com/gov-data/charlotte-gentrification-maps-demographic-data.html" target="_blank">Information about gentrification in Charlotte </a></li>
+          <li>Maps served by <a href="http://leafletjs.com/" target="_blank">Leaflet</a></li>
+          
+          <li>Inspiration and code from <a href="https://codeforboston.github.io/ungentry/" target="_blank">Ungentry</a></li>
+        </div>
+        </div>
+      </div>
+    </nav>
+  
+</body>
+</html>
+<!-- leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+crossorigin=""></script>
+<!-- cluster -->
+<link rel="stylesheet" href="Leaflet.markercluster-1.4.1/dist/MarkerCluster.css">
+<link rel="stylesheet" href="Leaflet.markercluster-1.4.1/dist/MarkerCluster.Default.css"> 
+<script src="Leaflet.markercluster-1.4.1/dist/leaflet.markercluster-src.js"></script>
+<!-- awesome marker -->
+<link rel="stylesheet" href="Leaflet.awesome-markers-2.0-develop/dist/leaflet.awesome-markers.css">
+<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
+<script src= "Leaflet.awesome-markers-2.0-develop/dist/leaflet.awesome-markers.js"></script>
+<!-- unknown -->
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" type="text/css">
+
+ <!-- bootstrap-- unknwon (navbar?) -->
+ <link rel="stylesheet" href="bootstrap-3.4.1-dist/css/bootstrap.min.css" type="text/css">
+<!-- font awesome -->
+ <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css" type="text/css" />
+ <link rel = "stylesheet" href = "http://fortawesome.github.io/Font-Awesome/icons/" />
+ <!-- sync maps-->
+ <script src="Leaflet.Sync-master/L.Map.Sync.js"></script>
+
+  <!-- geojson data-->
+<script src="data/restaurant_date_all.geojson"></script>
+<script src="data/restaurant_date_mid.geojson"></script>
+
+    <style type="text/css">
+        html, body { width: 100%; height: 90%; margin: 2;}
+        #map0, #map1, #map2 { width: 33.33%; height: 100%;}
+        #map0 { float: left; }
+        #map1 { float: left; }
+        #map2 { float: right; }
+    </style>
+    <style>
+        
+        /* code from https://www.w3schools.com/howto/howto_css_images_side_by_side.asp */    
+       * {
+          box-sizing: border-box;
+        }
+        
+        .row {
+          display: flex;
+        }
+        
+        /* Create three equal columns that sits next to each other */
+        .column {
+          flex: 33.33%;
+          padding: 1px;
+        }
+        </style>
+        </head>
+</head>
+
+<body>   
+    <div id="map0"></div>
+    <div id="map1"></div>
+    <div id="map2"></div>
+          
+            <div class="col-sm-8 col-md-9 map-group"></div>
+              <div id="map0_col" class="map-segment first map-wrapper active">
+            <div id="map0" class="map">
+              <h2 id="date">2005-2011</h2>
+            </div>
+          </div>
+          <div id="map1_col" class="map-segment second map-wrapper">
+            <div id="map1" class="map" >
+              <h2>2011-2016</h2>
+            </div>
+          </div>
+          <div id="map2_col" class="map-segment third map-wrapper">
+            <div id="map2" class="map">
+              <h2>2016-2019</h2>
+            </div>
+          </div>
+        </div>
+        
+    <script type="text/javascript">
+        var center = [35.2251, -80.8393];
+
+        var stamenOptions = {
+            attribution:
+                'Map tiles by <a href="http://stamen.com">Stamen Design</a>, ' +
+                '<a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; ' +
+                'Map data OpenStreetmap',
+            subdomains: 'abcd',
+            minZoom: 0,
+            maxZoom: 16
+        };
+
+        var layer0 = L.tileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', stamenOptions);
+        var layer1 = L.tileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', stamenOptions);
+        var layer2 = L.tileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', stamenOptions);
+
+        var map0 = L.map('map0', {
+            layers: [layer0],
+            center: center,
+            zoom: 12
+        });
+        
+        var map1 = L.map('map1', {
+            layers: [layer1],
+            center: center,
+            zoom: 12,
+            zoomControl: true
+        });
+        var map2 = L.map('map2', {
+            layers: [layer2],
+            center: center,
+            zoom: 12,
+            zoomControl: true
+        });
+
+//icons
+
+//early icons
+var earlyIcon = L.AwesomeMarkers.icon({
+        prefix: 'fa', //font awesome rather than bootstrap
+        markerColor: 'red', // see colors above
+        icon: 'cutlery' //http://fortawesome.github.io/Font-Awesome/icons/
+    });
+
+    var early = L.geoJSON(rest, {
+          filter: function(feature, layer) {
+              return feature.properties.year <= ("2010");
+          },
+                onEachFeature: function (feature, layer) {
+                    layer.bindPopup('<h1 align = "center">'+feature.properties.name+'</h1><h2 align = "center"> <br/>Rating: '+feature.properties.stars+'</h2><h3 align = "center"> <br/> First Review: '+feature.properties.year+'</h3>');
+                },
+                pointToLayer: function (feature, latlng) {
+                    return L.marker(latlng, {icon: earlyIcon});}
+                })//.addTo(map)
+            
+    var clusters = L.markerClusterGroup();
+        clusters.addLayer(early);
+            map0.addLayer(clusters);
+//mid icons
+    var midIcon = L.AwesomeMarkers.icon({
+        prefix: 'fa', //font awesome rather than bootstrap
+        markerColor: 'green', // see colors above
+        icon: 'cutlery' //http://fortawesome.github.io/Font-Awesome/icons/
+    });
+            var mid = L.geoJSON(mid, {
+                onEachFeature: function (feature, layer) {
+                    layer.bindPopup('<h1 align = "center">'+feature.properties.name+'</h1><h2 align = "center"> <br/>Rating: '+feature.properties.stars+'</h2><h3 align = "center"> <br/> First Review: '+feature.properties.year+'</h3>');
+                },
+                pointToLayer: function (feature, latlng) {
+                    return L.marker(latlng, {icon: midIcon});}
+                })//.addTo(map)
+      var clusters = L.markerClusterGroup();
+        clusters.addLayer(mid);
+            map1.addLayer(clusters);
+
+
+//late icons
+var lateIcon = L.AwesomeMarkers.icon({
+        prefix: 'fa', //font awesome rather than bootstrap
+        markerColor: 'blue', // see colors above
+        icon: 'cutlery' //http://fortawesome.github.io/Font-Awesome/icons/
+    });
+    var late = L.geoJSON(rest, {
+          filter: function(feature, layer) {
+              return feature.properties.year >= ("2016");
+          },
+                onEachFeature: function (feature, layer) {
+                    layer.bindPopup('<h1 align = "center">'+feature.properties.name+'</h1><h2 align = "center"> <br/>Rating: '+feature.properties.stars+'</h2><h3 align = "center"> <br/> First Review: '+feature.properties.year+'</h3>');
+                },
+                pointToLayer: function (feature, latlng) {
+                    return L.marker(latlng, {icon: lateIcon});}
+                })//.addTo(map)
+    var clusters = L.markerClusterGroup();
+        clusters.addLayer(late);
+        map2.addLayer(clusters);
+
+        map0.sync(map1);
+        map0.sync(map2);
+        map1.sync(map0);
+        map1.sync(map2);
+        map2.sync(map1);
+        map2.sync(map0);
+
+var overlayMaps = {
+    "2005": early,
+};
+L.control.layers(null, overlayMaps).addTo(map1);
+
+var overlayMaps1 = {
+    "2005": early,
+    "2011": mid,
+};
+L.control.layers(null, overlayMaps1).addTo(map2);
+      </script>
+
+<center><font><h3>Word Clouds</h3></font></center> <br>
+<center><p>The first three word clouds represent the sentiments from reviews of restaurants during the three respective time periods represented in the maps. The second set of
+    word clouds represent low review words and high review words.</p></center>
+
+<div class="row" id = "maps">
+    <div class="column">
+      <img  src="word_clouds/wc_early_color.png" alt="First Period" style="width:100%">
+    </div>
+    <div class="column">
+        <img  src="word_clouds/wc_mid_300.png" alt="Middle Period" style="width:100%">
+    </div>
+    <div class="column">
+        <img  src="word_clouds/wc_late_color.png" alt="Last Period" style="width:100%">
+    </div>
+  </div>
+  <center><h4>Low vs. High Reviews</h4></center>
+<div class="row" id="word clouds">
+    <div class="column">
+      <img  src="word_clouds/wordcloud_low.png" alt="Low Ratings" style="width:100%">
+    </div>
+    <div class="column">
+        <img  src="word_clouds/worcloud_high.png" alt="High Ratings" style="width:100%">
+    </div>
+</div>
